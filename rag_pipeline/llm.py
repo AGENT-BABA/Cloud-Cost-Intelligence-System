@@ -11,6 +11,10 @@ On Render, set this environment variable in the dashboard:
 """
 
 import os
+from dotenv import load_dotenv
+
+# Try to load from .env file (if it exists)
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 def get_llm(temperature: float = 0.1):
     """
@@ -25,7 +29,7 @@ def get_llm(temperature: float = 0.1):
             "Please add it as an environment variable (e.g. locally or on Render)."
         )
 
-    model = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
     print(f"[llm] Using Google Gemini: model={model}")
     
     # We use Google Generative AI chat model
