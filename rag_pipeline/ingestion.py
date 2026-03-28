@@ -16,9 +16,10 @@ verdict1.py or verdict2.py.
 import os
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_ollama import OllamaEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -33,8 +34,8 @@ BUSINESS_CONTEXT_PATH = os.path.join(CONTEXT_DIR, "business_context_template.txt
 VS_TECHNICAL_PATH = os.path.join(VECTOR_STORE_DIR, "vs_technical")
 VS_BUSINESS_PATH = os.path.join(VECTOR_STORE_DIR, "vs_business")
 
-# Embedding model — nomic-embed-text runs locally via Ollama
-EMBED_MODEL = "nomic-embed-text"
+# Embedding model — Google Gemini Embeddings
+EMBED_MODEL = "models/text-embedding-004"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -65,10 +66,14 @@ def build_vector_store(docs: list, embeddings) -> FAISS:
 def ingest():
     os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
 
-    print("[ingestion] Initialising Ollama embeddings model:", EMBED_MODEL)
-    embeddings = OllamaEmbeddings(
+    print("[ingestion] Initialising Google Gemini embeddings model:", EMBED_MODEL)
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise EnvironmentError("GOOGLE_API_KEY is not set.")
+        
+    embeddings = GoogleGenerativeAIEmbeddings(
         model=EMBED_MODEL,
-        base_url="http://localhost:11434",
+        google_api_key=api_key
     )
 
     # --- Load raw documents ---

@@ -32,7 +32,7 @@ import json
 import sys
 import re
 
-from langchain_ollama import OllamaEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains import RetrievalQA
@@ -46,7 +46,6 @@ from verdict1 import run_verdict1, DEFAULT_SMOKE_PATH
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VS_BUSINESS_PATH = os.path.join(BASE_DIR, "vector-store", "vs_business")
-EMBED_MODEL = "nomic-embed-text"
 
 
 # ── Prompt ────────────────────────────────────────────────────────────────────
@@ -212,9 +211,13 @@ def run_verdict2(verdict1_result: dict, anomaly_result: dict) -> dict:
             "Please run ingestion.py first."
         )
 
-    embeddings = OllamaEmbeddings(
-        model=EMBED_MODEL,
-        base_url="http://localhost:11434",
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise EnvironmentError("GOOGLE_API_KEY is not set.")
+        
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004",
+        google_api_key=api_key
     )
     vectorstore = FAISS.load_local(
         VS_BUSINESS_PATH,
