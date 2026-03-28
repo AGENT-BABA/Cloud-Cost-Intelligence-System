@@ -15,8 +15,8 @@ verdict1.py or verdict2.py.
 
 import os
 from langchain_community.document_loaders import TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import FAISS
 
 
@@ -91,8 +91,8 @@ def ingest():
     print(f"[ingestion] Technical store saved → {VS_TECHNICAL_PATH}")
 
     # --- Build Business vector store (Verdict 2) ---
-    print("[ingestion] Building business vector store (business_context + actions) …")
-    business_all_chunks = business_chunks + actions_chunks
+    print("[ingestion] Building business vector store (business_context + general_context + actions) …")
+    business_all_chunks = business_chunks + general_chunks + actions_chunks
     vs_business = build_vector_store(business_all_chunks, embeddings)
     vs_business.save_local(VS_BUSINESS_PATH)
     print(f"[ingestion] Business store saved → {VS_BUSINESS_PATH}")

@@ -1,0 +1,64 @@
+
+============================================================
+  CLOUD COST INTELLIGENCE ù RAG PIPELINE STARTED
+============================================================
+  Anomaly timestamp : 2026-03-27T23:55:00+00:00
+  Anomaly score     : -0.18
+  smoke data path   : C:\Users\ktack\OneDrive\Desktop\Cloud Cost Intelligence System\rag_pipeline\..\Data_Collector\Processed\smoke_latest.json
+
+
+============================================================
+  STAGE 1 ù TECHNICAL VERDICT
+============================================================
+[verdict1] Loading last 5 timestamps from: C:\Users\ktack\OneDrive\Desktop\Cloud Cost Intelligence System\rag_pipeline\..\Data_Collector\Processed\smoke_latest.json
+[verdict1] Loaded 5 recent timestamp records.
+[verdict1] Querying LLM à
+
+[Stage 1 Result]
+{
+  "verdict": "Storage drain anomaly detected",
+  "confidence": 0.95,
+  "action": "send_alert",
+  "parameters": {
+    "urgency": "immediate"
+  },
+  "reasoning": "The storage free metric has dropped significantly within a short window of time indicating an urgent issue.",
+  "risk_level": "HIGH"
+}
+
+============================================================
+  STAGE 2 ù BUSINESS-AWARE JUDGMENT
+============================================================
+[verdict2] Querying LLM à
+
+[Stage 2 Result]
+{
+  "decision": "send_alert",
+  "reason": "The Stage-1 recommendation aligns with our business context as it identifies a 'Storage drain' anomaly, which is explicitly listed in our general knowledge base of known storage issues. The significant drop in the free storage metric within just two hours and an accompanying high error rate are indicative of urgent problems that could lead to RDS service disruption if not addressed immediately. Given these factors, along with a HIGH risk level associated with this anomaly type as per our knowledge base, it is appropriate to follow the Stage-1 recommendation without modification."
+}
+
+============================================================
+  FINAL DECISION
+============================================================
+  Final Action : send_alert
+  Risk Level   : HIGH
+  Reason       : The Stage-1 recommendation aligns with our business context as it identifies a 'Storage drain' anomaly, which is explicitly listed in our general knowledge base of known storage issues. The significant drop in the free storage metric within just two hours and an accompanying high error rate are indicative of urgent problems that could lead to RDS service disruption if not addressed immediately. Given these factors, along with a HIGH risk level associated with this anomaly type as per our knowledge base, it is appropriate to follow the Stage-1 recommendation without modification.
+
+
+[pipeline] Full result dict:
+{
+  "stage1": {
+    "verdict": "Storage drain anomaly detected",
+    "confidence": 0.95,
+    "action": "send_alert",
+    "parameters": {
+      "urgency": "immediate"
+    },
+    "reasoning": "The storage free metric has dropped significantly within a short window of time indicating an urgent issue.",
+    "risk_level": "HIGH"
+  },
+  "stage2": {
+    "decision": "send_alert",
+    "reason": "The Stage-1 recommendation aligns with our business context as it identifies a 'Storage drain' anomaly, which is explicitly listed in our general knowledge base of known storage issues. The significant drop in the free storage metric within just two hours and an accompanying high error rate are indicative of urgent problems that could lead to RDS service disruption if not addressed immediately. Given these factors, along with a HIGH risk level associated with this anomaly type as per our knowledge base, it is appropriate to follow the Stage-1 recommendation without modification."
+  }
+}

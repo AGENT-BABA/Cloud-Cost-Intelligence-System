@@ -1,0 +1,28 @@
+{
+  "_comment": "Fill in the values below. This file is read by the pipeline at runtime. Keep it out of version control.",
+
+  "aws": {
+    "access_key_id": "YOUR_AWS_ACCESS_KEY_ID",
+    "secret_access_key": "YOUR_AWS_SECRET_ACCESS_KEY",
+    "region": "us-east-1"
+  },
+
+  "alerts": {
+    "channel": "email",
+    "email_to": "YOUR_RECIPIENT_EMAIL@example.com",
+    "email_from": "YOUR_SENDER_EMAIL@gmail.com",
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_user": "YOUR_SENDER_EMAIL@gmail.com",
+    "smtp_password": "YOUR_GMAIL_APP_PASSWORD"
+  },
+
+  "dry_run": true,
+
+  "_notes": {
+    "dry_run": "Set to false once you have filled in AWS credentials above. While true, NO real AWS calls are made.",
+    "gmail_app_password": "Do NOT use your normal Gmail password here. Go to: Google Account > Security > 2-Step Verification > App Passwords. Generate one for 'Mail'.",
+    "aws_keys": "Use an IAM user with least-privilege permissions: ec2:StopInstances, lambda:PutFunctionConcurrency, ec2:CreateTags, ec2:DeleteVolume, ec2:CreateSnapshot, sns:Publish.",
+    "region": "Set this to the AWS region your resources live in, e.g. ap-south-1 for Mumbai."
+  }
+}
