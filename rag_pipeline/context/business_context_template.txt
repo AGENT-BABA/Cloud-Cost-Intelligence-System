@@ -1,0 +1,42 @@
+# Business Context
+# This file is filled in by the user during onboarding
+# It is read by Stage 2 LLM to make business-aware decisions
+
+## About the business
+Company name: [e.g. PayFlow Inc.]
+What the product does: [e.g. B2B payments processing platform for SMEs]
+Stage: [e.g. early startup / growth / enterprise]
+Team size: [e.g. 8 engineers]
+
+## Production hours
+Business hours: [e.g. 9am - 9pm IST, Monday to Friday]
+Peak traffic windows: [e.g. 10am-12pm and 3pm-6pm IST]
+Low traffic windows: [e.g. midnight to 6am IST — safe for automatic actions]
+Weekend behavior: [e.g. ~20% of weekday traffic, no deployments]
+
+## Resource ownership
+# Tag your AWS resources with these team names so the agent knows who owns what
+Payments team owns: [e.g. Lambda functions tagged team=payments, RDS prod-mysql-01]
+Platform team owns: [e.g. EC2 instances, S3 buckets, EBS volumes]
+Data team owns: [e.g. RDS analytics-db, Lambda functions tagged team=data]
+
+## Critical resources — NEVER touch automatically
+# List resource IDs or tags that must never be stopped/throttled without human approval
+Critical resources: [e.g. prod-mysql-01, any instance tagged env=production, Lambda functions tagged critical=true]
+
+## Expected usage patterns (NOT anomalies)
+# Describe known traffic patterns so the agent does not misclassify them
+- Traffic spikes every Monday 9am as users start the week
+- Lambda invocations spike end of month (billing cycle processing)
+- RDS CPU spikes every night at 2am (scheduled analytics query — this is intentional)
+- EC2 CPU drops to near zero on weekends (expected — low usage)
+
+## Cost budget
+Monthly budget: [e.g. $150/month]
+Alert threshold: [e.g. alert if daily spend exceeds $8]
+Hard stop threshold: [e.g. if daily spend exceeds $20, stop all non-critical resources]
+
+## Alert preferences
+Alert channel: [e.g. Slack #infra-alerts / email: team@company.com]
+Who to alert for critical issues: [e.g. CTO + on-call engineer]
+Auto-action preference: [e.g. auto-fix LOW risk issues, alert only for MEDIUM and HIGH]
