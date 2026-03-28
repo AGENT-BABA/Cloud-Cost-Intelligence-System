@@ -1,0 +1,22 @@
+{
+  "trained_at": "2026-03-28T20:35:18.090985+00:00",
+  "n_rows": 2016,
+  "n_anomalies": 225,
+  "contamination": 0.111607,
+  "features": [
+    "cpu_utilization",
+    "network_in",
+    "network_out",
+    "memory_usage",
+    "requests",
+    "error_rate",
+    "storage_free",
+    "billing_rate",
+    "cost_per_hour"
+  ],
+  "model_params": {
+    "n_estimators": 200,
+    "max_samples": "auto",
+    "random_state": 42
+  }
+}

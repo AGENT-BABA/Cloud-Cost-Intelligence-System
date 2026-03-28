@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment & secrets — NEVER commit these
+.env
+agent_config.json
+
+# Local test output files
+rag_pipeline/final_test*.txt
+rag_pipeline/pipeline_*.txt
+alerts.log
+
+# OS
+.DS_Store
+Thumbs.db
