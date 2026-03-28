@@ -1,0 +1,61 @@
+# Available Actions
+# This file tells the LLM exactly what functions exist, when to use them, and their risk level
+# The LLM must return ONLY function names from this list — it cannot invent new ones
+
+## ACTION: stop_instance
+- Function signature: stop_instance(instance_id: str)
+- What it does: stops an EC2 instance. Instance is NOT terminated — data is preserved. Can be restarted.
+- When to use: EC2 CPU idle below 3% for 4+ hours, instance has no active connections
+- Risk level: LOW (reversible)
+- Do NOT use if: instance is tagged "critical" or "production" or has active connections > 0
+- Example: stop_instance("i-0a1b2c3d4e5f67890")
+
+## ACTION: set_lambda_concurrency
+- Function signature: set_lambda_concurrency(function_name: str, limit: int)
+- What it does: sets reserved concurrency on a Lambda function. Setting to 0 stops all invocations immediately.
+- When to use: runaway invocation loop detected (invocations 10x+ AND duration < 50ms)
+- Risk level: MEDIUM if limit > 0, HIGH impact if limit = 0 (stops all traffic to that function)
+- Do NOT use if: function is tagged "payments", "auth", or "critical" during business hours
+- Example: set_lambda_concurrency("prod-data-processor", 0)
+
+## ACTION: delete_volume
+- Function signature: delete_volume(volume_id: str)
+- What it does: permanently deletes an unattached EBS volume
+- When to use: ONLY if volume state is "available" (not attached to any instance) AND last used > 7 days ago
+- Risk level: HIGH (irreversible — data is lost permanently)
+- Do NOT use automatically — always requires human confirmation via send_alert first
+- Example: delete_volume("vol-0abc123def456789a")
+
+## ACTION: tag_resource
+- Function signature: tag_resource(resource_id: str, tags: dict)
+- What it does: adds tags to any AWS resource for tracking and cost allocation
+- When to use: untagged resource detected, resource needs "review-required" flag
+- Risk level: NONE (safe, no operational impact)
+- Example: tag_resource("i-0a1b2c3d4e5f67890", {"review-required": "true", "flagged-by": "cost-agent"})
+
+## ACTION: send_alert
+- Function signature: send_alert(message: str, severity: str, resource_id: str)
+- What it does: sends notification to the configured alert channel (email / Slack)
+- When to use: any anomaly where automatic action is too risky, or as a first step before acting
+- Risk level: NONE
+- Severity options: "info", "warning", "critical"
+- Example: send_alert("RDS storage dropping fast", "critical", "prod-mysql-01")
+
+## ACTION: snapshot_then_delete
+- Function signature: snapshot_then_delete(volume_id: str)
+- What it does: takes a snapshot of an EBS volume first, then deletes it. Safer than delete_volume.
+- When to use: idle attached volume that needs to be cleaned up but data may be needed later
+- Risk level: LOW (snapshot preserves data)
+- Example: snapshot_then_delete("vol-0abc123def456789a")
+
+## RETURN FORMAT
+The LLM must always return a JSON object in this exact format:
+{
+  "verdict": "one sentence explaining what the anomaly is",
+  "confidence": 0.0 to 1.0,
+  "action": "function_name",
+  "parameters": { "param1": "value1" },
+  "reasoning": "one sentence explaining why this action was chosen",
+  "risk_level": "LOW | MEDIUM | HIGH"
+}
+If no action should be taken, set "action" to "send_alert" with appropriate message.

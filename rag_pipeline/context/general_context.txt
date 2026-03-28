@@ -1,0 +1,79 @@
+# General Anomaly Knowledge Base
+# This file is read by Stage 1 LLM — technical anomaly reasoning
+
+## What is a cost anomaly
+A cost anomaly is any deviation from the established baseline usage pattern
+that results in unexpected or wasteful cloud spend. Not all spikes are anomalies
+— a traffic spike during a product launch is expected. An anomaly is unexpected
+given the business context.
+
+## EC2 Anomaly Types
+
+### Idle instance
+- Signal: CPU below 3% sustained for more than 4 hours
+- Cause: forgotten dev/test instance, deployment gone wrong, scheduled job that stopped
+- Risk: low — stopping a genuinely idle instance has no user impact
+- Recommended action: stop_instance
+
+### CPU runaway
+- Signal: CPU above 85% sustained for more than 30 minutes, no corresponding traffic spike
+- Cause: infinite loop in application code, runaway cron job, memory leak causing swap
+- Risk: medium — instance may be serving traffic
+- Recommended action: send_alert, do NOT stop automatically
+
+### Unscheduled backup IO spike
+- Signal: EBS read/write ops spike 10x+ between midnight and 6am
+- Cause: misconfigured backup job, snapshot running on wrong schedule
+- Risk: low — IO spike itself is not harmful, but adds cost
+- Recommended action: tag_resource, send_alert
+
+## Lambda Anomaly Types
+
+### Runaway invocation loop
+- Signal: invocation count spikes 10x+ AND average duration drops below 50ms simultaneously
+- Cause: Lambda triggering itself (S3 event on same bucket it writes to, SQS circular trigger)
+- Risk: HIGH — can exhaust concurrency limit, cause cascading failures, cost hundreds of dollars/hour
+- Recommended action: set_lambda_concurrency(0) immediately — this is the only safe stop
+
+### Error storm
+- Signal: error rate spikes from <1% to >20% within a single 5-minute interval
+- Cause: bad deployment, downstream service outage, environment variable misconfiguration
+- Risk: medium — application is broken but throttling won't fix it
+- Recommended action: send_alert, do NOT change concurrency (errors are not a cost issue)
+
+### Cold start spike
+- Signal: duration spikes 3-5x with no increase in error rate or invocation count
+- Cause: new deployment, memory increase, dependency added
+- Risk: low — self-resolves as instances warm up
+- Recommended action: monitor only, no action needed
+
+## RDS Anomaly Types
+
+### CPU spike (slow query)
+- Signal: RDS CPU above 80% for more than 20 minutes during business hours
+- Cause: missing index, N+1 query, full table scan, sudden traffic increase
+- Risk: medium-high — database may become unresponsive
+- Recommended action: send_alert immediately, do not restart automatically
+
+### Storage drain
+- Signal: free storage drops more than 20% within a 2-hour window
+- Cause: log explosion, temp table flood, runaway data import, binary log not purging
+- Risk: HIGH — if storage hits 0, RDS stops accepting writes
+- Recommended action: send_alert immediately with urgency flag
+
+### Idle RDS
+- Signal: CPU below 2% and connections below 2 for more than 8 hours
+- Cause: dev/staging database left running over weekend
+- Risk: low
+- Recommended action: send_alert to owner (do NOT stop RDS automatically — data loss risk)
+
+## Confidence Score Thresholds
+- Above 0.85: anomaly confirmed, action can be executed automatically if risk is LOW
+- 0.60 - 0.85: anomaly likely, send alert and recommend action but do not auto-execute
+- Below 0.60: uncertain, log only, do not alert
+
+## What is NOT an anomaly
+- Traffic spikes that correlate with Lambda invocation increase AND EC2 CPU increase together
+- Cost increases on Monday mornings (weekend idle → weekday active transition)
+- Storage growth that is linear and consistent with historical rate
+- Lambda duration increases after a new deployment (warming period)
