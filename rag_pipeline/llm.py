@@ -3,56 +3,36 @@ llm.py
 ------
 Configures the LLM used by verdict1.py and verdict2.py.
 
-Automatically switches between:
-  - LOCAL:      Ollama (phi3 at localhost:11434) — for local development
-  - PRODUCTION: OpenAI (gpt-4o-mini) — for Render / cloud deployment
+Uses Google Gemini (gemini-1.5-flash) by default via the Gemini API.
+It requires the GOOGLE_API_KEY environment variable to be set.
 
-The switch is controlled by the environment variable LLM_PROVIDER:
-  LLM_PROVIDER=ollama   → use local Ollama (default if not set)
-  LLM_PROVIDER=openai   → use OpenAI API (requires OPENAI_API_KEY env var)
-
-On Render, set these two environment variables in the dashboard:
-  LLM_PROVIDER = openai
-  OPENAI_API_KEY = sk-...
+On Render, set this environment variable in the dashboard:
+  GOOGLE_API_KEY = AIza...
 """
 
 import os
 
-
 def get_llm(temperature: float = 0.1):
     """
-    Returns the correct LLM instance based on the LLM_PROVIDER env variable.
+    Returns a LangChain ChatGoogleGenerativeAI instance pointed at Google Gemini.
     """
-    provider = os.environ.get("LLM_PROVIDER", "ollama").lower()
+    from langchain_google_genai import ChatGoogleGenerativeAI
 
-    if provider == "openai":
-        return _get_openai_llm(temperature)
-    else:
-        return _get_ollama_llm(temperature)
-
-
-def _get_ollama_llm(temperature: float):
-    """Local development — Ollama running at localhost."""
-    from langchain_ollama import OllamaLLM
-
-    model = os.environ.get("OLLAMA_MODEL", "phi3")
-    base_url = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-
-    print(f"[llm] Using Ollama: model={model}, base_url={base_url}")
-    return OllamaLLM(model=model, temperature=temperature, base_url=base_url)
-
-
-def _get_openai_llm(temperature: float):
-    """Production — OpenAI API."""
-    from langchain_openai import ChatOpenAI
-
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         raise EnvironmentError(
-            "LLM_PROVIDER=openai but OPENAI_API_KEY is not set. "
-            "Add it as an environment variable on Render."
+            "GOOGLE_API_KEY is not set. "
+            "Please add it as an environment variable (e.g. locally or on Render)."
         )
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    print(f"[llm] Using OpenAI: model={model}")
-    return ChatOpenAI(model=model, temperature=temperature, api_key=api_key)
+    model = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+    print(f"[llm] Using Google Gemini: model={model}")
+    
+    # We use Google Generative AI chat model
+    return ChatGoogleGenerativeAI(
+        model=model,
+        temperature=temperature,
+        google_api_key=api_key,
+        # Setting a generic block threshold may be needed if safety settings interfere 
+        # heavily with code/server patterns, but default is generally fine.
+    )
